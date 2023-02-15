@@ -9,18 +9,13 @@ def _get_playwright_context_manager():
     return BaseContext.playwright_context_manager
 
 
-CHROME_OPTIONS = ["--ignore-certificate-errors", "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                                                 "AppleWebKit/537.36 "
-                                                 "(KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"]
-
-TIMEOUT = 45000
-SMALL_TIMEOUT = 15000
-BROWSER = "chrome"
-HEADLESS_MODE = True
-
-
 class BaseContext:
-
+    CHROME_OPTIONS = ["--ignore-certificate-errors", "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                                                     "AppleWebKit/537.36 "
+                                                     "(KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"]
+    TIMEOUT = 45000
+    SMALL_TIMEOUT = 15000
+    BROWSER = "chrome"
     playwright_context_manager = None
 
     def __init__(self):
@@ -29,6 +24,43 @@ class BaseContext:
     @keyword("close all browsers")
     def close_all_browsers(self):
         self.player.stop()
+
+    @keyword("set global timeout")
+    def set_global_timeout(self, timeout):
+        BaseContext.TIMEOUT = timeout
+
+    @keyword("register custom locator")
+    def register_custom_locator(self, strategy_name, xpath_mask):
+        """
+        Register a new locator strategy such as item:Login or btn:Save
+        :param strategy_name: The custom strategy name
+        :param xpath_mask: The xpath that point to a Locator
+        Should contain a placeholder to store the value of the locator strategy
+        E.g  xpath_mask = '//a[text()="${label}"]/following-sibling::*[1]'
+        The "${label}" placeholder should be declared in the xpath_mask without modifying the name of it
+        :return:
+        """
+        custom_queries = """
+              {
+                   query(document, label) {
+                      let node = document.evaluate(`xpath_mask`, document, null,
+                      XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+                      return node;
+                  },
+                   queryAll(document, label) {
+                      let xpath = `xpath_mask`;
+                      let results = [];
+                      let query = document.evaluate(xpath, document,
+                          null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+                      for (let i = 0, length = query.snapshotLength; i < length; ++i) {
+                          results.push(query.snapshotItem(i));
+                      }
+                      return results;
+                          }
+              }
+              """
+        custom_queries.replace("xpath_mask", xpath_mask)
+        self.player.selectors.register(strategy_name, custom_queries)
 
     def _setup_custom_locators(self):
         self.player.selectors.register('item', QUERY_BY_ITEM)

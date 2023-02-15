@@ -1,8 +1,6 @@
 import json
 from json import JSONDecodeError
-
 from playwright.sync_api import APIResponse, expect
-
 from .base_context import BaseContext
 from .utils import pretty_logging
 from robotlibcore import keyword

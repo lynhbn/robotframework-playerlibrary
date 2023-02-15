@@ -1,16 +1,9 @@
-import datetime
 import json
-import pathlib
 import string
 from json import JSONDecodeError
 import random
 from robotlibcore import keyword
 from robot.libraries.BuiltIn import BuiltIn as Robot
-
-NOW_TIMESTAMP = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S-%f")
-CUR_DIR = pathlib.Path(__file__).resolve()
-PROJECT_DIR = CUR_DIR.parent.parent.parent.parent.parent
-APP_URL = "https://goto.your.rentals"
 
 
 def pretty_logging(content):

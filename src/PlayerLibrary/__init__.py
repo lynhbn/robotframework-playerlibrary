@@ -10,13 +10,13 @@ from .popup_handler import PopupHandler
 from .table_handler import TableHandler
 from .textbox_handler import TextboxHandler
 from .ui_context import UIContext
-from .misc import Misc
 
 
 class PlayerLibrary(DynamicCore):
+    ROBOT_LIBRARY_SCOPE = 'GLOBAL'
 
     def __init__(self):
         libraries = [APIContext(), UIContext(), ButtonHandler(), CheckboxHandler(), DatePickerHandler(),
                      DropdownHandler(), IframeHandler(), PageHandler(), PopupHandler(), TableHandler(),
-                     TextboxHandler(), Misc()]
+                     TextboxHandler()]
         DynamicCore.__init__(self, libraries)

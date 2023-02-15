@@ -3,7 +3,7 @@ from playwright.sync_api import expect
 from robotlibcore import keyword
 from .ui_context import UIContext
 from .utils import Robot
-from .base_context import SMALL_TIMEOUT
+from .base_context import BaseContext
 
 
 class DatePickerHandler(UIContext):
@@ -16,7 +16,7 @@ class DatePickerHandler(UIContext):
         element = self.get_element(locator)
         element.evaluate("node => node.removeAttribute('readonly')")
         element.fill(value, force=True)
-        element.locator("xpath=./following-sibling::span/button").click()
+        self.get_element("xpath=//body").click()
         Robot().sleep(1)
         return value
 
@@ -39,7 +39,7 @@ class DatePickerHandler(UIContext):
 
     @keyword('actual date should be')
     def actual_date_should_be(self, locator, expected_date, input_format=BASIC_DATE_FORMAT,
-                              displayed_format=ALTERNATIVE_DATE_FORMAT, timeout=SMALL_TIMEOUT):
+                              displayed_format=ALTERNATIVE_DATE_FORMAT, timeout=BaseContext.SMALL_TIMEOUT):
         actual_date = None
         for sec in range(int(timeout/1000)):
             actual_date = self.get_actual_text(locator)
@@ -51,7 +51,7 @@ class DatePickerHandler(UIContext):
 
     @keyword('actual date should not be')
     def actual_date_should_not_be(self, locator, expected_date, input_format=BASIC_DATE_FORMAT,
-                                  displayed_format=ALTERNATIVE_DATE_FORMAT, timeout=SMALL_TIMEOUT):
+                                  displayed_format=ALTERNATIVE_DATE_FORMAT, timeout=BaseContext.SMALL_TIMEOUT):
         actual_date = None
         for sec in range(int(timeout/1000)):
             actual_date = self.get_actual_text(locator)

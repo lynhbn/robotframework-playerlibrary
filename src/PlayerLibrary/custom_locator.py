@@ -1,14 +1,15 @@
 import re
 
 BUILT_IN_PREFIX = ('id', 'text', 'data-test-id')
-CUSTOM_PREFIX = ('item', 'btn', 'plc', 'cbx', 'radio', 'link', 'name', 'class')
+STANDARD_PREFIX = ('plc', 'link', 'name', 'class')
+CUSTOM_PREFIX = ('item', 'btn', 'cbx', 'link')
 XPATH_PREFIX = ("xpath://", "//")
 
 
 def standardize_locator(locator: str):
     index = 1
     locator = locator.replace("data-id", "data-test-id")
-    if any(prefix for prefix in CUSTOM_PREFIX + BUILT_IN_PREFIX if locator.startswith(prefix)):
+    if any(prefix for prefix in CUSTOM_PREFIX + BUILT_IN_PREFIX + STANDARD_PREFIX if locator.startswith(prefix)):
         index = get_custom_element_index(locator)
         locator = re.sub(r':', '=', locator, count=1)
         locator = re.sub(r'\[\d+]', '', locator)

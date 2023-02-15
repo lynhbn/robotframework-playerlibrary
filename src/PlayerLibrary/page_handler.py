@@ -1,10 +1,10 @@
-import pathlib
+import base64
 
 from playwright.sync_api import expect
 from robotlibcore import keyword
-from .utils import Robot, PROJECT_DIR, NOW_TIMESTAMP
+from .utils import Robot
 from .ui_context import UIContext
-from .base_context import SMALL_TIMEOUT, TIMEOUT
+from .base_context import BaseContext
 from .custom_locator import *
 
 
@@ -22,43 +22,43 @@ class PageHandler(UIContext):
         return [element.text_content() for element in elements]
 
     @keyword('text should be visible')
-    def text_should_be_visible(self, *texts, timeout=SMALL_TIMEOUT):
+    def text_should_be_visible(self, *texts, timeout=BaseContext.SMALL_TIMEOUT):
         for text in texts:
             element = self.get_element(f'//body//*[not(self::script)][contains(.,"{text}")]').first
             expect(element).to_be_visible(timeout=timeout)
 
     @keyword('text should not be visible')
-    def text_should_not_be_visible(self, *texts, timeout=SMALL_TIMEOUT):
+    def text_should_not_be_visible(self, *texts, timeout=BaseContext.SMALL_TIMEOUT):
         for text in texts:
             element = self.get_element(f'//body//*[not(self::script)][contains(text(),"{text}")]')
             expect(element).to_be_hidden(timeout=timeout)
 
     @keyword('texts should be visible')
-    def texts_should_be_visible(self, texts: list, timeout=TIMEOUT, deep_scan=False):
+    def texts_should_be_visible(self, texts: list, timeout=BaseContext.TIMEOUT, deep_scan=False):
         text_node = "text()" if not deep_scan else "."
         for text in texts:
             element = self.get_element(f'//body//*[not(self::script)][contains({text_node},"{text}")]')
             expect(element).to_be_visible(timeout=timeout)
 
     @keyword('texts should not be visible')
-    def texts_should_not_be_visible(self, texts: list, timeout=TIMEOUT, deep_scan=False):
+    def texts_should_not_be_visible(self, texts: list, timeout=BaseContext.TIMEOUT, deep_scan=False):
         text_node = "text()" if not deep_scan else "."
         for text in texts:
             element = self.get_element(f'//body//*[not(self::script)][contains({text_node},"{text}")]')
             expect(element).to_be_hidden(timeout=timeout)
 
     @keyword('Page should have')
-    def page_should_have(self, *items, timeout=TIMEOUT):
+    def page_should_have(self, *items, timeout=BaseContext.TIMEOUT):
         for item in items:
-            if item.startswith(BUILT_IN_PREFIX + CUSTOM_PREFIX + XPATH_PREFIX):
+            if item.startswith(BUILT_IN_PREFIX + CUSTOM_PREFIX + STANDARD_PREFIX + XPATH_PREFIX):
                 self.page_should_have_element(item, timeout)
             else:
                 self.text_should_be_visible(item)
 
     @keyword('page should not have')
-    def page_should_not_have(self, *items, timeout=TIMEOUT):
+    def page_should_not_have(self, *items, timeout=BaseContext.TIMEOUT):
         for item in items:
-            if item.startswith(BUILT_IN_PREFIX + CUSTOM_PREFIX + XPATH_PREFIX):
+            if item.startswith(BUILT_IN_PREFIX + CUSTOM_PREFIX + STANDARD_PREFIX + XPATH_PREFIX):
                 self.page_should_not_have_element(item, timeout)
             else:
                 self.text_should_not_be_visible(item)
@@ -68,13 +68,13 @@ class PageHandler(UIContext):
         expect(self.get_page()).to_have_url("about:blank")
 
     @keyword('page should have element')
-    def page_should_have_element(self, locator, timeout=TIMEOUT):
+    def page_should_have_element(self, locator, timeout=BaseContext.TIMEOUT):
         element = self.get_element(locator)
         expect(element).to_be_visible(timeout=timeout)
         return element
 
     @keyword('page should not have element')
-    def page_should_not_have_element(self, locator, timeout=SMALL_TIMEOUT, recheck_timeout=2):
+    def page_should_not_have_element(self, locator, timeout=BaseContext.SMALL_TIMEOUT, recheck_timeout=2):
         element = self.get_element(locator)
         expect(element).to_be_hidden(timeout=timeout)
         Robot().sleep(recheck_timeout)
@@ -103,10 +103,8 @@ class PageHandler(UIContext):
 
     @keyword('capture screenshot')
     def capture_screenshot(self):
-        pathlib.Path(f'{PROJECT_DIR}/results/images').mkdir(parents=True, exist_ok=True)
-        path = pathlib.Path(f'{PROJECT_DIR}/results/images/custom-screenshot-{NOW_TIMESTAMP}.png').resolve()
-        print(path)
-        self.get_page().screenshot(path=path, full_page=True)
+        image_bytes = self.get_page().screenshot(full_page=True)
+        image_source = base64.b64encode(image_bytes).decode('utf-8')
         image = f"""
         <html>
             <head>
@@ -118,7 +116,7 @@ class PageHandler(UIContext):
                 </style>
             </head>
             <body>
-                <img class="one" src="{path}">
+                <img class="one" src="data:image/png;base64, {image_source}">
             </body>
         </html>   
         """
@@ -153,7 +151,7 @@ class PageHandler(UIContext):
         text = text.replace("{", "").replace("}", "")
         self.page_should_have(text)
 
-    @keyword('upload file', tags=["specific"])
+    @keyword('upload file')
     def upload_file(self, file_path, locator='//input[@type="file"]'):
         """
         Handle the upload file function. Locator must point to the element having 'type=file' attribute
@@ -161,7 +159,6 @@ class PageHandler(UIContext):
         :param file_path:
         :return: None
         """
-        file_path = file_path.replace('PROJECT_DIR', Robot().get_variable_value('${EXECDIR}'))
         self.get_element(locator).set_input_files(file_path)
 
     @keyword('wait for text', tags=['deprecated'])
@@ -174,12 +171,10 @@ class PageHandler(UIContext):
 
     @keyword('scroll to element', tags=["deprecated"])
     def scroll_to_element(self, locator):
-        # self.get_element(locator).scroll_into_view_if_needed()
         pass
 
     @keyword('scroll element into view', tags=["deprecated"])
     def scroll_element_into_view(self, locator):
-        # self.get_element(locator).scroll_into_view_if_needed()
         pass
 
     @keyword('scroll to element with additional alignment')

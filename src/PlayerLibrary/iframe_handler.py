@@ -1,7 +1,7 @@
 from playwright.sync_api import expect
 from robotlibcore import keyword
 from .ui_context import UIContext
-from .base_context import TIMEOUT
+from .base_context import BaseContext
 
 
 class IframeHandler(UIContext):
@@ -15,13 +15,13 @@ class IframeHandler(UIContext):
         self.iframe = None
 
     @keyword('iframe should contain')
-    def iframe_should_contain(self, *texts, timeout=TIMEOUT):
+    def iframe_should_contain(self, *texts, timeout=BaseContext.TIMEOUT):
         for text in texts:
             element = self.iframe.locator(f'//body//*[not(self::script)][contains(text(),"{text}")]')
             expect(element).to_be_visible(timeout=timeout)
 
     @keyword('iframe should not contain')
-    def iframe_should_not_contain(self, *texts, timeout=TIMEOUT):
+    def iframe_should_not_contain(self, *texts, timeout=BaseContext.TIMEOUT):
         for text in texts:
             element = self.iframe.locator(f'//body//*[not(self::script)][contains(text(),"{text}")]')
             expect(element).to_be_hidden(timeout=timeout)

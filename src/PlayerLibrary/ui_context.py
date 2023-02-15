@@ -1,8 +1,8 @@
 from playwright.sync_api import expect, Locator
 from robotlibcore import keyword
 from .custom_locator import *
-from .base_context import BaseContext, TIMEOUT, SMALL_TIMEOUT, HEADLESS_MODE, BROWSER, CHROME_OPTIONS
-from .utils import Robot, should_be_equal_as_amounts, rgb_to_hex, APP_URL
+from .base_context import BaseContext
+from .utils import Robot, should_be_equal_as_amounts, rgb_to_hex
 
 
 class UIContext(BaseContext):
@@ -10,6 +10,9 @@ class UIContext(BaseContext):
     iframe = None
     context = None
     tracing = False
+    CHROME_OPTIONS = ["--ignore-certificate-errors", "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                                                     "AppleWebKit/537.36 "
+                                                     "(KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"]
 
     def __init__(self):
         super().__init__()
@@ -20,11 +23,11 @@ class UIContext(BaseContext):
 
     def get_browser(self):
         default_browser = None
-        if BROWSER == "chrome":
+        if BaseContext.BROWSER == "chrome":
             default_browser = self.player.chromium
-        elif BROWSER == "firefox":
+        elif BaseContext.BROWSER == "firefox":
             default_browser = self.player.firefox
-        elif BROWSER == "safari":
+        elif BaseContext.BROWSER == "safari":
             default_browser = self.player.webkit
         return default_browser
 
@@ -33,15 +36,15 @@ class UIContext(BaseContext):
             UIContext.page = self.get_context().new_page()
         return UIContext.page
 
-    def get_context(self, headless=HEADLESS_MODE, device=None, tracing=True):
+    def get_context(self, headless=True, device=None, tracing=True):
         if not UIContext.context:
             if not device:
-                UIContext.context = self.browser.launch(headless=headless, args=CHROME_OPTIONS).new_context()
+                UIContext.context = self.browser.launch(headless=headless, args=UIContext.CHROME_OPTIONS).new_context()
             else:
                 device_model = self.player.devices[device]
                 UIContext.context = self.browser.launch(
                     headless=headless,
-                    args=CHROME_OPTIONS).new_context(**device_model)
+                    args=UIContext.CHROME_OPTIONS).new_context(**device_model)
             if tracing:
                 UIContext.context.tracing.start(screenshots=True, snapshots=True, sources=True)
                 UIContext.tracing = True
@@ -85,7 +88,7 @@ class UIContext(BaseContext):
         self.page.reload()
 
     @keyword('go to hard url')
-    def go_to_hard_url(self, directory_string, default_host=APP_URL):
+    def go_to_hard_url(self, directory_string, default_host):
         """
         [Documentation]   Enter expected hard url by typing it on Browser Address bar.
         ${directory_string} should be something like /dashboard/agent/booking
@@ -103,7 +106,7 @@ class UIContext(BaseContext):
         self.page.goto(url)
 
     @keyword('go to url in email', tags=["specific"])
-    def go_to_url_in_email(self, url, timeout=TIMEOUT, mail_service='mandrillapp'):
+    def go_to_url_in_email(self, url, timeout=BaseContext.TIMEOUT, mail_service='mandrillapp'):
         Robot().run_keyword_and_ignore_error('PlayerLibrary.go to url', url, False)
         for sec in range(int(timeout/1000)):
             Robot().sleep(2)
@@ -148,7 +151,7 @@ class UIContext(BaseContext):
         return self.get_page().locator(locator).locator(f"nth={index - 1}")
 
     @keyword("get elements")
-    def get_elements(self, locator, timeout=SMALL_TIMEOUT, wait_for_element=False):
+    def get_elements(self, locator, timeout=BaseContext.SMALL_TIMEOUT, wait_for_element=False):
         if wait_for_element:
             expect(self.get_element(locator)).to_be_visible(timeout=timeout)
         print(f"Element locator is: {locator}")
@@ -165,7 +168,7 @@ class UIContext(BaseContext):
         self.get_element(locator).click(force=True)
 
     @keyword('click and wait')
-    def click_and_wait(self, locator, expected_item=None, expected_text=None, timeout=TIMEOUT):
+    def click_and_wait(self, locator, expected_item=None, expected_text=None, timeout=BaseContext.TIMEOUT):
         element = self.get_element(locator)
         element.click()
         if expected_item:
@@ -243,10 +246,10 @@ class UIContext(BaseContext):
         element = self.get_element(locator)
         tag = self.get_element_tag(element)
         if tag in ('input', 'textarea', 'select'):
-            expect(element).to_have_value(re.compile(r".+"), timeout=SMALL_TIMEOUT)
+            expect(element).to_have_value(re.compile(r".+"), timeout=BaseContext.SMALL_TIMEOUT)
             actual_text = element.input_value()
         else:
-            expect(element).not_to_be_empty(timeout=SMALL_TIMEOUT)
+            expect(element).not_to_be_empty(timeout=BaseContext.SMALL_TIMEOUT)
             actual_text = element.inner_text()
         return actual_text
 
@@ -277,7 +280,7 @@ class UIContext(BaseContext):
         element.fill(f'{original_text}{text}')
 
     @keyword('actual text should be')
-    def actual_text_should_be(self, locator, expected_value, timeout=SMALL_TIMEOUT):
+    def actual_text_should_be(self, locator, expected_value, timeout=BaseContext.SMALL_TIMEOUT):
         actual_text = None
         for sec in range(int(timeout/1000)):
             actual_text = self.get_actual_text(locator)
@@ -288,7 +291,7 @@ class UIContext(BaseContext):
             raise AssertionError(f"Actual text: '{actual_text}' are different with expected text: '{expected_value}'")
 
     @keyword('actual text should not be')
-    def actual_text_should_not_be(self, locator, expected_value, timeout=SMALL_TIMEOUT):
+    def actual_text_should_not_be(self, locator, expected_value, timeout=BaseContext.SMALL_TIMEOUT):
         actual_text = None
         for sec in range(int(timeout/1000)):
             actual_text = self.get_actual_text(locator)
@@ -299,7 +302,7 @@ class UIContext(BaseContext):
             raise AssertionError(f"Actual text: '{actual_text}' are similar with expected text: '{expected_value}'")
 
     @keyword('actual text should contain')
-    def actual_text_should_contain(self, locator, expected_value, timeout=SMALL_TIMEOUT):
+    def actual_text_should_contain(self, locator, expected_value, timeout=BaseContext.SMALL_TIMEOUT):
         actual_text = None
         for sec in range(int(timeout/1000)):
             actual_text = self.get_actual_text(locator)
@@ -310,7 +313,7 @@ class UIContext(BaseContext):
             raise AssertionError(f"Actual text: '{actual_text}' does not include the text: '{expected_value}'")
 
     @keyword('actual text should not contain')
-    def actual_text_should_not_contain(self, locator, expected_value, timeout=SMALL_TIMEOUT):
+    def actual_text_should_not_contain(self, locator, expected_value, timeout=BaseContext.SMALL_TIMEOUT):
         actual_text = None
         for sec in range(int(timeout/1000)):
             actual_text = self.get_actual_text(locator)
@@ -321,7 +324,7 @@ class UIContext(BaseContext):
             raise AssertionError(f"Actual text: '{actual_text}' still includes the text: '{expected_value}'")
 
     @keyword('actual amount should be')
-    def actual_amount_should_be(self, locator, expected_amount, deviation=0.01, timeout=SMALL_TIMEOUT):
+    def actual_amount_should_be(self, locator, expected_amount, deviation=0.01, timeout=BaseContext.SMALL_TIMEOUT):
         actual_text = None
         for sec in range(int(timeout/1000)):
             actual_text = self.get_actual_text(locator)
@@ -333,7 +336,7 @@ class UIContext(BaseContext):
                 f"Actual amount: '{actual_text}' is different with expected amount: '{expected_amount}'")
 
     @keyword('actual amount should not be')
-    def actual_amount_should_not_be(self, locator, expected_amount, deviation=0.01, timeout=SMALL_TIMEOUT):
+    def actual_amount_should_not_be(self, locator, expected_amount, deviation=0.01, timeout=BaseContext.SMALL_TIMEOUT):
         actual_text = None
         for sec in range(int(timeout/1000)):
             actual_text = self.get_actual_text(locator)
@@ -383,14 +386,14 @@ class UIContext(BaseContext):
         if currency != price_value[0] or expected_amount != price_value[1:]:
             raise AssertionError("They are equal to each other!")
 
-    @keyword("element should be marked as required")
+    @keyword("element should be marked as required", tags=['specific'])
     def element_should_be_marked_as_required(self, locator):
         element = self.get_element(locator)
         signal_1 = element.locator(f'xpath=/../preceding-sibling::*[contains(@class,"require")]')
         signal_2 = element.locator(f'xpath=/preceding-sibling::*[contains(@class,"require")]')
         assert signal_1.is_visible() or signal_2.is_visible() or ("require" in element.get_attribute("class"))
 
-    @keyword("element should not be marked as required")
+    @keyword("element should not be marked as required", tags=['specific'])
     def element_should_not_be_marked_as_required(self, locator):
         element = self.get_element(locator)
         signal_1 = element.locator(f'xpath=/../preceding-sibling::*[contains(@class,"require")]')
@@ -440,7 +443,7 @@ class UIContext(BaseContext):
         expect(element).to_have_attribute(attribute, value)
 
     @keyword('element attribute value should contain')
-    def element_attribute_value_should_contain(self, locator, attribute, expected_value, timeout=TIMEOUT):
+    def element_attribute_value_should_contain(self, locator, attribute, expected_value, timeout=BaseContext.TIMEOUT):
         for sec in range(int(timeout/1000)):
             actual_value = self.get_attribute(locator, attribute)
             if str(expected_value) in str(actual_value):
@@ -450,7 +453,7 @@ class UIContext(BaseContext):
                 raise AssertionError(f"Actual attribute: '{attribute}' does not include value: '{expected_value}'")
 
     @keyword('element attribute value should not contain')
-    def element_attribute_value_should_not_contain(self, locator, attribute, expected_value, timeout=SMALL_TIMEOUT):
+    def element_attribute_value_should_not_contain(self, locator, attribute, expected_value, timeout=BaseContext.SMALL_TIMEOUT):
         actual_value = None
         for sec in range(int(timeout/1000)):
             actual_value = self.get_attribute(locator, attribute)
@@ -461,7 +464,7 @@ class UIContext(BaseContext):
             raise AssertionError(f"Actual attribute: '{attribute}' still includes value: '{expected_value}'")
 
     @keyword("element should be shown")
-    def element_should_be_shown(self, locator, timeout=SMALL_TIMEOUT):
+    def element_should_be_shown(self, locator, timeout=BaseContext.SMALL_TIMEOUT):
         expect(self.get_element(locator)).to_be_visible(timeout=timeout)
 
     @keyword("element should not be shown")
@@ -561,19 +564,19 @@ class UIContext(BaseContext):
         return hex_color
 
     @keyword("wait for element", tags=["deprecated"])
-    def wait_for_element(self, locator, timeout=SMALL_TIMEOUT):
+    def wait_for_element(self, locator, timeout=BaseContext.SMALL_TIMEOUT):
         expect(self.get_element(locator)).to_be_visible(timeout=timeout)
 
     @keyword("wait for element to hide", tags=["deprecated"])
-    def wait_for_element_to_hide(self, locator, timeout=SMALL_TIMEOUT):
+    def wait_for_element_to_hide(self, locator, timeout=BaseContext.SMALL_TIMEOUT):
         expect(self.get_element(locator)).to_be_hidden(timeout=timeout)
 
     @keyword('wait for element to be enabled', tags=["deprecated"])
-    def wait_for_element_to_be_enabled(self, locator, timeout=SMALL_TIMEOUT):
+    def wait_for_element_to_be_enabled(self, locator, timeout=BaseContext.SMALL_TIMEOUT):
         expect(self.get_element(locator)).to_be_enabled(timeout=timeout)
 
     @keyword('wait for element to be disabled', tags=["deprecated"])
-    def wait_for_element_to_be_disabled(self, locator, timeout=SMALL_TIMEOUT):
+    def wait_for_element_to_be_disabled(self, locator, timeout=BaseContext.SMALL_TIMEOUT):
         expect(self.get_element(locator)).to_be_disabled(timeout=timeout)
 
     @keyword('should be downloaded normally')
@@ -582,3 +585,15 @@ class UIContext(BaseContext):
             self.get_element(locator).click()
         download = download_info.value
         return download.path()
+
+    @keyword('setup custom locator', tags=["deprecated"])
+    def setup_custom_locator(self):
+        pass
+
+    @keyword('Set Library Search Order', tags=["deprecated"])
+    def set_library_search_order(self):
+        pass
+
+    @keyword('wait for page to be ready', tags=["deprecated"])
+    def wait_for_page_to_be_ready(self):
+        pass

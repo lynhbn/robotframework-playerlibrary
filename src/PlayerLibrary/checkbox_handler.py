@@ -1,7 +1,7 @@
 from playwright.sync_api import expect
 from robotlibcore import keyword
 from .ui_context import UIContext
-from .base_context import SMALL_TIMEOUT
+from .base_context import BaseContext
 
 
 class CheckboxHandler(UIContext):
@@ -9,12 +9,12 @@ class CheckboxHandler(UIContext):
     @keyword('checkbox should be enabled')
     def checkbox_should_be_enabled(self, locator):
         element = self.get_element(locator)
-        expect(element).to_be_enabled(timeout=SMALL_TIMEOUT)
+        expect(element).to_be_enabled(timeout=BaseContext.SMALL_TIMEOUT)
 
     @keyword('checkbox should be disabled')
     def checkbox_should_be_disabled(self, locator):
         element = self.get_element(locator)
-        expect(element).to_be_disabled(timeout=SMALL_TIMEOUT)
+        expect(element).to_be_disabled(timeout=BaseContext.SMALL_TIMEOUT)
 
     @keyword('tick checkbox')
     def tick_checkbox(self, locator):

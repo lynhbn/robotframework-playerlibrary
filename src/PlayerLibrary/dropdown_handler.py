@@ -15,12 +15,12 @@ class DropdownHandler(UIContext):
     def dropdown_should_be_disabled(self, locator):
         expect(self.get_element(locator)).to_be_disabled()
 
-    @keyword('dropdown should be required')
+    @keyword('dropdown should be required', tags=['specific'])
     def dropdown_should_be_required(self, locator):
         element = self.get_element(locator).locator("xpath=./preceding-sibling::*")
         expect(element).to_have_class(re.compile(r"required"))
 
-    @keyword('dropdown should not be required')
+    @keyword('dropdown should not be required', tags=['specific'])
     def dropdown_should_not_be_required(self, locator):
         element = self.get_element(locator).locator("xpath=./preceding-sibling::*")
         expect(element).not_to_have_class(re.compile(r"required"))
