@@ -31,3 +31,4 @@ TC_01 - Check correctness of some elements on the screen
     Element Should Be Shown    ${apply_btn}
     Element Should Be Shown    ${clear_btn}
 ```
+Keyword documentation at https://lynhbn.github.io/robotframework-playerlibrary/keyword_document.html
