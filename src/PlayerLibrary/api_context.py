@@ -12,10 +12,16 @@ class APIContext(BaseContext):
     DEFAULT_CONTENT_TYPE_FORM = "application/x-www-form-urlencoded"
     DEFAULT_HEADER_FORM = {"content-type": "application/x-www-form-urlencoded"}
     DEFAULT_HEADER_JSON = {"content-type": "application/json"}
+    api_context = None
 
     def __init__(self):
         super().__init__()
-        self.api = self.player.request.new_context()
+        self.api = self.get_api_context()
+
+    def get_api_context(self):
+        if not APIContext.api_context:
+            APIContext.api_context = self.player.request.new_context()
+        return APIContext.api_context
 
     @keyword("rest post")
     def rest_post(self, url, headers, body, code=200):

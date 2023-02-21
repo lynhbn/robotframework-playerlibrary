@@ -15,7 +15,10 @@ class BaseContext:
                                                      "(KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"]
     TIMEOUT = 45000
     SMALL_TIMEOUT = 15000
+    BIG_TIMEOUT = 120000
     BROWSER = "chrome"
+    BASE_URL = None
+    STORAGE_STATE = None
     playwright_context_manager = None
 
     def __init__(self):

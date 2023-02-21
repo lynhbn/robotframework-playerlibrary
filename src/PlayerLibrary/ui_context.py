@@ -36,10 +36,11 @@ class UIContext(BaseContext):
             UIContext.page = self.get_context().new_page()
         return UIContext.page
 
-    def get_context(self, headless=True, device=None, tracing=True):
+    def get_context(self, headless=False, device=None, tracing=False, state=None):
         if not UIContext.context:
             if not device:
-                UIContext.context = self.browser.launch(headless=headless, args=UIContext.CHROME_OPTIONS).new_context()
+                UIContext.context = self.browser.launch(headless=headless,
+                                                        args=UIContext.CHROME_OPTIONS).new_context(storage_state=state)
             else:
                 device_model = self.player.devices[device]
                 UIContext.context = self.browser.launch(
@@ -51,17 +52,22 @@ class UIContext(BaseContext):
         return UIContext.context
 
     @keyword('start blank browser')
-    def start_blank_browser(self):
-        self._setup_custom_locators()
-        self.context = self.get_context()
+    def start_blank_browser(self,  headless=False):
+        # self._setup_custom_locators()
+        self.context = self.get_context(headless=headless)
         self.page = self.get_page()
 
     @keyword('start browser then open url')
-    def start_browser_then_open_url(self, url):
-        self._setup_custom_locators()
-        self.context = self.get_context()
+    def start_browser_then_open_url(self, url, headless=False):
+        # self._setup_custom_locators()
+        self.context = self.get_context(headless=headless)
         self.page = self.get_page()
-        self.page.goto(url)
+        self.page.goto(url, timeout=BaseContext.BIG_TIMEOUT)
+        BaseContext.BASE_URL = url
+
+    @keyword('store storage state')
+    def store_storage_state(self):
+        BaseContext.STORAGE_STATE = self.context.storage_state()
 
     @keyword('start incognito browser then open url', tags=['deprecated'])
     def start_incognito_browser_then_open_url(self, url):
@@ -72,11 +78,17 @@ class UIContext(BaseContext):
         Robot().run_keyword_if_test_failed("PlayerLibrary.capture screenshot")
         if UIContext.tracing:
             self.context.tracing.stop(path="trace.zip")
-        self.context.close()
-        UIContext.context = None
-        UIContext.page = None
-        self.context = self.get_context()
-        self.page = self.get_page()
+        self.page.evaluate("() => window.localStorage.clear()")
+        self.page.evaluate("() => window.sessionStorage.clear()")
+        self.context.clear_cookies()
+        self.page.reload()
+        Robot().sleep(2)
+        # self.page.close()
+        # self.context.close()
+        # UIContext.page = None
+        # UIContext.context = None
+        # self.context = self.get_context(state=BaseContext.STORAGE_STATE)
+        # self.page = self.get_page()
 
     @keyword("close player")
     def close_player(self):
@@ -125,7 +137,9 @@ class UIContext(BaseContext):
 
     @keyword('quit all browsers')
     def quit_all_browsers(self):
-        self.close_player()
+        self.page.close()
+        self.context.close()
+        self.player.stop()
 
     @keyword('close current browser')
     def close_current_browser(self):
@@ -453,7 +467,8 @@ class UIContext(BaseContext):
                 raise AssertionError(f"Actual attribute: '{attribute}' does not include value: '{expected_value}'")
 
     @keyword('element attribute value should not contain')
-    def element_attribute_value_should_not_contain(self, locator, attribute, expected_value, timeout=BaseContext.SMALL_TIMEOUT):
+    def element_attribute_value_should_not_contain(self, locator, attribute, expected_value,
+                                                   timeout=BaseContext.SMALL_TIMEOUT):
         actual_value = None
         for sec in range(int(timeout/1000)):
             actual_value = self.get_attribute(locator, attribute)

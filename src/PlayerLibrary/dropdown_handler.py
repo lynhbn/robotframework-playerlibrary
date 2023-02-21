@@ -27,7 +27,7 @@ class DropdownHandler(UIContext):
 
     @keyword('select value')
     def select_value(self, locator, selected_value):
-        self.get_element(locator).select_option(label=selected_value)
+        self.get_element(locator).select_option(label=selected_value, force=True)
 
     @keyword('select nested value', tags=["specific"])
     def select_nested_value(self, locator, selected_value, wait_for_value=True, unchecked=False):
