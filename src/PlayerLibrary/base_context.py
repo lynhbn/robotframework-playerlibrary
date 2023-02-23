@@ -3,12 +3,6 @@ from robotlibcore import keyword
 from .custom_locator import *
 
 
-def _get_playwright_context_manager():
-    if not BaseContext.playwright_context_manager:
-        BaseContext.playwright_context_manager = sync_playwright().start()
-    return BaseContext.playwright_context_manager
-
-
 class BaseContext:
     CHROME_OPTIONS = ["--ignore-certificate-errors", "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                                                      "AppleWebKit/537.36 "
@@ -22,12 +16,13 @@ class BaseContext:
     playwright_context_manager = None
 
     def __init__(self):
-        self.player = _get_playwright_context_manager()
+        self.player = self.get_player()
 
-    @keyword("close all browsers")
-    def close_all_browsers(self):
-        self.player.stop()
-
+    def get_player(self):
+        if not BaseContext.playwright_context_manager:
+            BaseContext.playwright_context_manager = sync_playwright().start()
+        return BaseContext.playwright_context_manager
+    
     @keyword("set global timeout")
     def set_global_timeout(self, timeout):
         BaseContext.TIMEOUT = timeout

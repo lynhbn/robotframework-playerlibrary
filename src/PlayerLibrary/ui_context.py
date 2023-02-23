@@ -6,6 +6,7 @@ from .utils import Robot, should_be_equal_as_amounts, rgb_to_hex
 
 
 class UIContext(BaseContext):
+    browser = None
     page = None
     iframe = None
     context = None
@@ -16,20 +17,20 @@ class UIContext(BaseContext):
 
     def __init__(self):
         super().__init__()
-        self.browser = self.get_browser()
+        self.browser =  UIContext.browser
         self.context = UIContext.context
         self.page = UIContext.page
         self.iframe = UIContext.iframe
 
     def get_browser(self):
-        default_browser = None
-        if BaseContext.BROWSER == "chrome":
-            default_browser = self.player.chromium
-        elif BaseContext.BROWSER == "firefox":
-            default_browser = self.player.firefox
-        elif BaseContext.BROWSER == "safari":
-            default_browser = self.player.webkit
-        return default_browser
+        if not UIContext.browser:
+            if BaseContext.BROWSER == "chrome":
+                UIContext.browser = self.get_player().chromium
+            elif BaseContext.BROWSER == "firefox":
+                UIContext.browser = self.get_player().firefox
+            elif BaseContext.BROWSER == "safari":
+                UIContext.browser = self.get_player().webkit
+        return UIContext.browser
 
     def get_page(self):
         if not UIContext.page:
@@ -39,11 +40,11 @@ class UIContext(BaseContext):
     def get_context(self, headless=False, device=None, tracing=False, state=None):
         if not UIContext.context:
             if not device:
-                UIContext.context = self.browser.launch(headless=headless,
+                UIContext.context = self.get_browser().launch(headless=headless,
                                                         args=UIContext.CHROME_OPTIONS).new_context(storage_state=state)
             else:
                 device_model = self.player.devices[device]
-                UIContext.context = self.browser.launch(
+                UIContext.context = self.get_browser().launch(
                     headless=headless,
                     args=UIContext.CHROME_OPTIONS).new_context(**device_model)
             if tracing:
@@ -53,13 +54,17 @@ class UIContext(BaseContext):
 
     @keyword('start blank browser')
     def start_blank_browser(self,  headless=False):
-        # self._setup_custom_locators()
+        self.player = self.get_player()
+        self._setup_custom_locators()
+        self.browser = self.get_browser()
         self.context = self.get_context(headless=headless)
         self.page = self.get_page()
 
     @keyword('start browser then open url')
     def start_browser_then_open_url(self, url, headless=False):
-        # self._setup_custom_locators()
+        self.player = self.get_player()
+        self._setup_custom_locators()
+        self.browser = self.get_browser()
         self.context = self.get_context(headless=headless)
         self.page = self.get_page()
         self.page.goto(url, timeout=BaseContext.BIG_TIMEOUT)
@@ -90,14 +95,13 @@ class UIContext(BaseContext):
         # self.context = self.get_context(state=BaseContext.STORAGE_STATE)
         # self.page = self.get_page()
 
-    @keyword("close player")
-    def close_player(self):
-        self.player.stop()
-
     @keyword('refresh browser session', tags=["deprecated"])
     def refresh_browser_session(self):
+        self.page.evaluate("() => window.localStorage.clear()")
+        self.page.evaluate("() => window.sessionStorage.clear()")
         self.context.clear_cookies()
         self.page.reload()
+        Robot().sleep(2)
 
     @keyword('go to hard url')
     def go_to_hard_url(self, directory_string, default_host):
@@ -140,10 +144,16 @@ class UIContext(BaseContext):
         self.page.close()
         self.context.close()
         self.player.stop()
-
-    @keyword('close current browser')
-    def close_current_browser(self):
-        self.context.close()
+        UIContext.page = None
+        UIContext.browser = None
+        UIContext.context = None
+        UIContext.iframe = None
+        BaseContext.playwright_context_manager = None
+        
+    @keyword('close current page')
+    def close_current_page(self):
+        self.page.close()
+        UIContext.page = None
 
     @keyword('open new window')
     def open_new_window(self):

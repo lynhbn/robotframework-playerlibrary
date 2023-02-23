@@ -9,9 +9,7 @@ from .custom_locator import *
 
 
 class PageHandler(UIContext):
-    def __init__(self):
-        super().__init__()
-
+    
     @keyword('page title should be')
     def page_title_should_be(self, title):
         expect(self.get_page()).to_have_title(title)
