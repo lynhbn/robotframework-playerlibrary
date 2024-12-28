@@ -8,14 +8,13 @@ XPATH_PREFIX = ("xpath://", "//")
 
 def standardize_locator(locator: str):
     index = 1
-    locator = locator.replace("data-id", "data-test-id")
     if any(prefix for prefix in CUSTOM_PREFIX + BUILT_IN_PREFIX + STANDARD_PREFIX if locator.startswith(prefix)):
         index = get_custom_element_index(locator)
         locator = re.sub(r':', '=', locator, count=1)
         locator = re.sub(r'\[\d+]', '', locator)
         print_xpath(locator)
     else:
-        locator = f"{locator}[not(self::script)]"
+        locator = f"{locator}[not(self::script)]" if "[not(self::script)]" not in locator else locator
     return locator, index
 
 
@@ -52,38 +51,18 @@ def print_xpath(selector: str):
         print(f'//*[@{prefix}="{label}"]')
 
 
-QUERY_BY_ITEM = """
+CUSTOM_QUERY = """
       {
            query(document, label) {
-              let node = document.evaluate(`//label[text()="${label}"]/following-sibling::*[1]`, document, null,
+              let node = document.evaluate(`xpath_mask`, document, null,
               XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
               return node;
           },
            queryAll(document, label) {
-              let xpath = `//label[text()="${label}"]/following-sibling::*[1]`;
+              let xpath = `xpath_mask`;
               let results = [];
               let query = document.evaluate(xpath, document,
                   null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-              for (let i = 0, length = query.snapshotLength; i < length; ++i) {
-                  results.push(query.snapshotItem(i));
-              }
-              return results;
-                  }
-      }
-      """
-
-QUERY_BY_BTN = """
-      {
-           query(document, label) {
-              return document.evaluate(`//*[self::button or self::a][contains(.,"${label}") and (contains(@class,"btn") 
-              or contains(@class,"button"))]`, document, null, 
-              XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-          },
-           queryAll(document, label) {
-              let results = [];
-              let query = document.evaluate(`//*[self::button or self::a][contains(.,"${label}") and 
-              (contains(@class,"btn") or contains(@class,"button"))]`, document, null, 
-              XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
               for (let i = 0, length = query.snapshotLength; i < length; ++i) {
                   results.push(query.snapshotItem(i));
               }
@@ -101,44 +80,6 @@ QUERY_BY_PLC = """
            queryAll(document, label) {
               let results = [];
               let query = document.evaluate(`//*[@placeholder="${label}"]`, document, null, 
-              XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-              for (let i = 0, length = query.snapshotLength; i < length; ++i) {
-                  results.push(query.snapshotItem(i));
-              }
-              return results;
-                  }
-      }
-      """
-
-QUERY_BY_CBX = """
-      {
-           query(document, label) {
-              return document.evaluate(`//label[contains(.,"${label}")]/input[@type="checkbox"]|
-              //label[contains(.,"${label}")]/preceding-sibling::*[@type="checkbox"]`, 
-              document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-          },
-           queryAll(document, label) {
-              let results = [];
-              let query = document.evaluate(`//label[contains(.,"${label}")]/input[@type="checkbox"]|
-              //label[contains(.,"${label}")]/preceding-sibling::*[@type="checkbox"]`, document, null, 
-              XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-              for (let i = 0, length = query.snapshotLength; i < length; ++i) {
-                  results.push(query.snapshotItem(i));
-              }
-              return results;
-                  }
-      }
-      """
-
-QUERY_BY_RADIO = """
-      {
-           query(document, label) {
-              return document.evaluate(`//label[text()="${label}"]/preceding-sibling::input`, document, null, 
-              XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-          },
-           queryAll(document, label) {
-              let results = [];
-              let query = document.evaluate(`//label[text()="${label}"]/preceding-sibling::input`, document, null, 
               XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
               for (let i = 0, length = query.snapshotLength; i < length; ++i) {
                   results.push(query.snapshotItem(i));

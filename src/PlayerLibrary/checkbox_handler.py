@@ -1,20 +1,23 @@
 from playwright.sync_api import expect
 from robotlibcore import keyword
-from .ui_context import UIContext
 from .base_context import BaseContext
+from .config import *
 
 
-class CheckboxHandler(UIContext):
+class CheckboxHandler(BaseContext):
+
+    def __init__(self, ctx):
+        super().__init__(ctx)
 
     @keyword('checkbox should be enabled')
     def checkbox_should_be_enabled(self, locator):
         element = self.get_element(locator)
-        expect(element).to_be_enabled(timeout=BaseContext.SMALL_TIMEOUT)
+        expect(element).to_be_enabled(timeout=SMALL_TIMEOUT)
 
     @keyword('checkbox should be disabled')
     def checkbox_should_be_disabled(self, locator):
         element = self.get_element(locator)
-        expect(element).to_be_disabled(timeout=BaseContext.SMALL_TIMEOUT)
+        expect(element).to_be_disabled(timeout=SMALL_TIMEOUT)
 
     @keyword('tick checkbox')
     def tick_checkbox(self, locator):
@@ -41,20 +44,20 @@ class CheckboxHandler(UIContext):
     @keyword('checkbox should be correct')
     def checkbox_should_be_correct(self, locator, state='enabled', status='unchecked'):
         element = self.get_element(locator)
-        # Verify state
         if state == 'enabled':
-            self.checkbox_should_be_enabled(element)
+            expect(element).to_be_enabled()
         elif state == 'disabled':
-            self.checkbox_should_be_disabled(element)
-        # Verify status:
+            expect(element).to_be_disabled()
         if status == 'unchecked':
-            self.checkbox_should_not_be_checked(element)
+            expect(element).not_to_be_checked()
         elif status == 'checked':
-            self.checkbox_should_be_checked(element)
+            expect(element).to_be_checked()
 
     @keyword('select a radio option')
     def select_a_radio_option(self, locator):
-        self.get_element(locator).check(force=True)
+        radio = self.get_element(locator)
+        if not radio.is_checked():
+            radio.click()
 
     @keyword('radio button should be disabled')
     def radio_button_should_be_disabled(self, locator):
@@ -80,10 +83,10 @@ class CheckboxHandler(UIContext):
     def radio_should_be_correct(self, locator, state='enabled', status='unchecked'):
         element = self.get_element(locator)
         if state == 'enabled':
-            self.checkbox_should_be_enabled(element)
+            expect(element).to_be_enabled()
         elif state == 'disabled':
-            self.checkbox_should_be_disabled(element)
+            expect(element).to_be_disabled()
         if status == 'unchecked':
-            self.radio_button_should_not_be_checked(element)
+            expect(element).not_to_be_checked()
         elif status == 'checked':
-            self.radio_button_should_be_checked(element)
+            expect(element).to_be_checked()

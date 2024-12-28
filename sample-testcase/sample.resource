@@ -1,2 +1,2 @@
 *** Settings ***
-Library           PlayerLibrary
+Library           ../src/PlayerLibrary/

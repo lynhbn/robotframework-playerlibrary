@@ -1,31 +1,69 @@
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, Locator, expect
 from robotlibcore import keyword
+from .config import *
 from .custom_locator import *
 
 
 class BaseContext:
-    CHROME_OPTIONS = ["--ignore-certificate-errors", "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                                                     "AppleWebKit/537.36 "
-                                                     "(KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"]
-    TIMEOUT = 45000
-    SMALL_TIMEOUT = 15000
-    BIG_TIMEOUT = 120000
-    BROWSER = "chrome"
-    BASE_URL = None
-    STORAGE_STATE = None
-    playwright_context_manager = None
 
-    def __init__(self):
-        self.player = self.get_player()
+    playwright = sync_playwright().start()
 
-    def get_player(self):
-        if not BaseContext.playwright_context_manager:
-            BaseContext.playwright_context_manager = sync_playwright().start()
-        return BaseContext.playwright_context_manager
-    
-    @keyword("set global timeout")
-    def set_global_timeout(self, timeout):
-        BaseContext.TIMEOUT = timeout
+    def __init__(self, ctx):
+        self.ctx = ctx
+        self.ctx.player = BaseContext.playwright
+        self.ctx.browser = None
+        self.ctx.context = None
+        self.ctx.page = None
+        self.ctx.iframe = None
+        self.ctx.api = None
+
+    @property
+    def player(self):
+        return self.ctx.player
+
+    @player.setter
+    def player(self, value):
+        self.ctx.player = value
+
+    @property
+    def browser(self):
+        return self.ctx.browser
+
+    @browser.setter
+    def browser(self, value):
+        self.ctx.browser = value
+
+    @property
+    def context(self):
+        return self.ctx.context
+
+    @context.setter
+    def context(self, value):
+        self.ctx.context = value
+
+    @property
+    def page(self):
+        return self.ctx.page
+
+    @page.setter
+    def page(self, value):
+        self.ctx.page = value
+
+    @property
+    def iframe(self):
+        return self.ctx.iframe
+
+    @iframe.setter
+    def iframe(self, value):
+        self.ctx.iframe = value
+
+    @property
+    def api(self):
+        return self.ctx.api
+
+    @api.setter
+    def api(self, value):
+        self.ctx.api = value
 
     @keyword("register custom locator")
     def register_custom_locator(self, strategy_name, xpath_mask):
@@ -38,34 +76,32 @@ class BaseContext:
         The "${label}" placeholder should be declared in the xpath_mask without modifying the name of it
         :return:
         """
-        custom_queries = """
-              {
-                   query(document, label) {
-                      let node = document.evaluate(`xpath_mask`, document, null,
-                      XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-                      return node;
-                  },
-                   queryAll(document, label) {
-                      let xpath = `xpath_mask`;
-                      let results = [];
-                      let query = document.evaluate(xpath, document,
-                          null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-                      for (let i = 0, length = query.snapshotLength; i < length; ++i) {
-                          results.push(query.snapshotItem(i));
-                      }
-                      return results;
-                          }
-              }
-              """
-        custom_queries.replace("xpath_mask", xpath_mask)
-        self.player.selectors.register(strategy_name, custom_queries)
 
-    def _setup_custom_locators(self):
-        self.player.selectors.register('item', QUERY_BY_ITEM)
-        self.player.selectors.register('btn', QUERY_BY_BTN)
+        CUSTOM_QUERY.replace("xpath_mask", xpath_mask)
+        self.player.selectors.register(strategy_name, CUSTOM_QUERY)
+
+    def setup_custom_locators(self):
         self.player.selectors.register('plc', QUERY_BY_PLC)
-        self.player.selectors.register('cbx', QUERY_BY_CBX)
-        self.player.selectors.register('radio', QUERY_BY_RADIO)
         self.player.selectors.register('link', QUERY_BY_LINK)
         self.player.selectors.register('name', QUERY_BY_NAME)
         self.player.selectors.register('class', QUERY_BY_CLASS)
+
+    @keyword("get element")
+    def get_element(self, locator, get_all=False):
+        index = 1
+        if isinstance(locator, Locator):
+            return locator
+        locator, index = standardize_locator(locator)
+        print(f"Formatted locator is `{locator}`")
+        print(f"Index of locator is `{index}`")
+        return self.page.locator(locator).nth(index-1) if not get_all else self.page.locator(locator).all()
+
+    @keyword("get iframe element")
+    def get_iframe_element(self, locator, get_all=False):
+        index = 1
+        if isinstance(locator, Locator):
+            return locator
+        locator, index = standardize_locator(locator)
+        print(f"Formatted locator is `{locator}`")
+        print(f"Index of locator is `{index}`")
+        return self.iframe.locator(locator).nth(index-1) if not get_all else self.iframe.locator(locator).all()

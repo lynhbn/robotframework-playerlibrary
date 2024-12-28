@@ -1,11 +1,14 @@
 from playwright.sync_api import expect
 from robotlibcore import keyword
+from .base_context import BaseContext
 from .utils import random_number_chars
-from .ui_context import UIContext
 from .utils import Robot
 
 
-class TextboxHandler(UIContext):
+class TextboxHandler(BaseContext):
+
+    def __init__(self, ctx):
+        super().__init__(ctx)
 
     @keyword('input into')
     def input_into(self, locator, text, clear=True, force=False):
@@ -15,11 +18,6 @@ class TextboxHandler(UIContext):
         element.fill(text, force=force)
         return text
 
-    @keyword('input new text into', tags=["deprecated"])
-    def input_new_text_into(self, locator, text):
-        element = self.get_element(locator)
-        element.clear()
-        element.fill(text)
 
     @keyword("input text by pressing key")
     def input_text_by_pressing_key(self, locator, text, delay=100):
@@ -55,7 +53,7 @@ class TextboxHandler(UIContext):
         expect(self.get_element(locator)).to_have_attribute("placeholder", expected_text)
 
     @keyword('textbox should be correct')
-    def textbox_should_be_correct(self, locator, state='enabled', default="", mandatory=None, maxlength=None, is_numeric=False):
+    def textbox_should_be_correct(self, locator, state='enabled', default="", maxlength=None, is_numeric=False):
         element = self.get_element(locator)
         default = default.replace(',', '') if is_numeric else default
         # Verify state
@@ -69,8 +67,3 @@ class TextboxHandler(UIContext):
         # Verify Max-length
         if maxlength is not None:
             self.maxlength_should_be(element, maxlength)
-        # Verify mandatory
-        if mandatory == 'unrequired':
-            self.element_should_not_be_marked_as_required(element)
-        elif mandatory == 'required':
-            self.element_should_be_marked_as_required(element)

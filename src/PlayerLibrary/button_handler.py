@@ -1,20 +1,24 @@
 from playwright.sync_api import expect
 from robotlibcore import keyword
-from .ui_context import UIContext
 from .base_context import BaseContext
+from .config import *
 
 
-class ButtonHandler(UIContext):
+class ButtonHandler(BaseContext):
+
+    def __init__(self, ctx):
+        super().__init__(ctx)
 
     @keyword('button should be enabled')
     def button_should_be_enabled(self, locator):
+        print("abc:", locator)
         element = self.get_element(locator)
-        expect(element).to_be_enabled(timeout=BaseContext.SMALL_TIMEOUT)
+        expect(element).to_be_enabled(timeout=SMALL_TIMEOUT)
 
     @keyword('button should be disabled')
     def button_should_be_disabled(self, locator):
         element = self.get_element(locator)
-        expect(element).to_be_disabled(timeout=BaseContext.SMALL_TIMEOUT)
+        expect(element).to_be_disabled(timeout=SMALL_TIMEOUT)
 
     @keyword('button should be correct')
     def button_should_be_correct(self, locator, state='enabled'):
