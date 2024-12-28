@@ -1,7 +1,6 @@
 from playwright.sync_api import expect
 from robotlibcore import keyword
 from .base_context import BaseContext
-from .utils import Robot
 
 
 class DropdownHandler(BaseContext):

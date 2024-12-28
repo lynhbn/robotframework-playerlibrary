@@ -1,6 +1,5 @@
-from playwright.sync_api import sync_playwright, Locator, expect
+from playwright.sync_api import sync_playwright, Locator
 from robotlibcore import keyword
-from .config import *
 from .custom_locator import *
 
 

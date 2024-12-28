@@ -1,6 +1,5 @@
 from .config import *
 from .base_context import BaseContext
-from .utils import Robot
 from robotlibcore import keyword
 
 class BrowserHandler(BaseContext):

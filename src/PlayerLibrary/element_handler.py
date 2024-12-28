@@ -1,4 +1,3 @@
-import re
 from playwright.sync_api import expect
 from .base_context import BaseContext
 from .config import *
@@ -280,7 +279,8 @@ class ElementHandler(BaseContext):
             element.click()
         new_page = new_page_info.value
         new_page.wait_for_load_state()
-        self.page = self._get_latest_page()
+        self.page = self.context.pages[-1]
+        self.page.bring_to_front()
         if url is not None:
             expect(self.page).to_have_url(url)
         if content is not None:
@@ -293,7 +293,8 @@ class ElementHandler(BaseContext):
             element.click()
         new_page = new_page_info.value
         new_page.wait_for_load_state()
-        self.page = self._get_latest_page()
+        self.page = self.context.pages[-1]
+        self.page.bring_to_front()
         if url is not None:
             expect(self.page).to_have_url(url)
         if content is not None:
@@ -306,7 +307,8 @@ class ElementHandler(BaseContext):
             element.click()
         new_page = new_popup_info.value
         new_page.wait_for_load_state()
-        self.page = self._get_latest_page()
+        self.page = self.context.pages[-1]
+        self.page.bring_to_front()
         if url is not None:
             expect(self.page).to_have_url(url)
         if content is not None:
