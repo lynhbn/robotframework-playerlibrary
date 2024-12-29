@@ -21,14 +21,12 @@ class IframeHandler(BaseContext):
     @keyword('iframe should contain')
     def iframe_should_contain(self, *texts, timeout=TIMEOUT):
         for text in texts:
-            element = self.iframe.locator(f'.//body//*[not(self::script)][contains(text(),"{text}")]')
-            expect(element).to_be_visible(timeout=timeout)
+            expect(self.iframe.get_by_text(text)).to_be_visible(timeout=timeout)
 
     @keyword('iframe should not contain')
     def iframe_should_not_contain(self, *texts, timeout=TIMEOUT):
         for text in texts:
-            element = self.iframe.locator(f'.//body//*[not(self::script)][contains(text(),"{text}")]')
-            expect(element).to_be_hidden(timeout=timeout)
+            expect(self.iframe.get_by_text(text)).to_be_hidden(timeout=timeout)
 
     @keyword('input on iframe')
     def input_on_iframe(self, locator, text):

@@ -80,10 +80,9 @@ class BaseContext:
         self.player.selectors.register(strategy_name, CUSTOM_QUERY)
 
     def setup_custom_locators(self):
-        self.player.selectors.register('plc', QUERY_BY_PLC)
         self.player.selectors.register('link', QUERY_BY_LINK)
-        self.player.selectors.register('name', QUERY_BY_NAME)
-        self.player.selectors.register('class', QUERY_BY_CLASS)
+        for prefix in ATTR_PREFIXES:
+            self.player.selectors.register(prefix, get_the_query_by_attribute(prefix))
 
     @keyword("get element")
     def get_element(self, locator, get_all=False):

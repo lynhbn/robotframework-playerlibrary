@@ -32,3 +32,9 @@ TC_01 - Check correctness of some elements on the screen
     Element Should Be Shown    ${clear_btn}
 ```
 Keyword documentation at https://lynhbn.github.io/robotframework-playerlibrary/keyword_document.html
+
+Locator prefix supported:
+- BUILT_IN_PREFIXES = ('id', 'text', 'data-test-id', 'data-testid','data-test')
+- ATTR_PREFIXES = ('placeholder', 'name', 'class', 'value', 'title')
+- OBJ_PREFIXES = ('tbx', 'btn', 'checkbox', 'radio', 'dropdown', 'link')
+- XPATH_PREFIXES = ("xpath://", "//")

@@ -20,33 +20,33 @@ class PageHandler(BaseContext):
     @keyword('text should be visible')
     def text_should_be_visible(self, *texts, timeout=SMALL_TIMEOUT):
         for text in texts:
-            element = self.get_element(f'//body//*[not(self::script)][contains(.,"{text}")]').first
-            expect(element).to_be_visible(timeout=timeout)
+            # element = self.get_element(f'//body//*[not(self::script)][contains(.,"{text}")]')
+            expect(self.page.get_by_text(text)).to_be_visible(timeout=timeout)
 
     @keyword('text should not be visible')
     def text_should_not_be_visible(self, *texts, timeout=SMALL_TIMEOUT):
         for text in texts:
-            element = self.get_element(f'//body//*[not(self::script)][contains(text(),"{text}")]')
-            expect(element).to_be_hidden(timeout=timeout)
+            # element = self.get_element(f'//body//*[not(self::script)][contains(text(),"{text}")]')
+            expect(self.page.get_by_text(text)).to_be_hidden(timeout=timeout)
 
     @keyword('texts should be visible')
-    def texts_should_be_visible(self, texts: list, timeout=TIMEOUT, deep_scan=False):
-        text_node = "text()" if not deep_scan else "."
+    def texts_should_be_visible(self, texts: list, timeout=SMALL_TIMEOUT):
+        # text_node = "text()" if not deep_scan else "."
         for text in texts:
-            element = self.get_element(f'//body//*[not(self::script)][contains({text_node},"{text}")]')
-            expect(element).to_be_visible(timeout=timeout)
+            # element = self.get_element(f'//body//*[not(self::script)][contains({text_node},"{text}")]')
+            expect(self.page.get_by_text(text)).to_be_visible(timeout=timeout)
 
     @keyword('texts should not be visible')
-    def texts_should_not_be_visible(self, texts: list, timeout=TIMEOUT, deep_scan=False):
-        text_node = "text()" if not deep_scan else "."
+    def texts_should_not_be_visible(self, texts: list, timeout=SMALL_TIMEOUT):
+        # text_node = "text()" if not deep_scan else "."
         for text in texts:
-            element = self.get_element(f'//body//*[not(self::script)][contains({text_node},"{text}")]')
-            expect(element).to_be_hidden(timeout=timeout)
+            # element = self.get_element(f'//body//*[not(self::script)][contains({text_node},"{text}")]')
+            expect(self.page.get_by_text(text)).to_be_hidden(timeout=timeout)
 
     @keyword('Page should have')
     def page_should_have(self, *items, timeout=TIMEOUT):
         for item in items:
-            if item.startswith(BUILT_IN_PREFIX + CUSTOM_PREFIX + STANDARD_PREFIX + XPATH_PREFIX):
+            if item.startswith(ALL_PREFIXES):
                 self.page_should_have_element(item, timeout)
             else:
                 self.text_should_be_visible(item)
@@ -54,7 +54,7 @@ class PageHandler(BaseContext):
     @keyword('page should not have')
     def page_should_not_have(self, *items, timeout=TIMEOUT):
         for item in items:
-            if item.startswith(BUILT_IN_PREFIX + CUSTOM_PREFIX + STANDARD_PREFIX + XPATH_PREFIX):
+            if item.startswith(ALL_PREFIXES):
                 self.page_should_not_have_element(item, timeout)
             else:
                 self.text_should_not_be_visible(item)

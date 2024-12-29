@@ -1,14 +1,14 @@
 import re
 
-BUILT_IN_PREFIX = ('id', 'text', 'data-test-id')
-STANDARD_PREFIX = ('plc', 'link', 'name', 'class')
-CUSTOM_PREFIX = ('item', 'btn', 'cbx', 'link')
-XPATH_PREFIX = ("xpath://", "//")
-
+BUILT_IN_PREFIXES = ('id', 'text', 'data-test-id', 'data-testid','data-test')
+ATTR_PREFIXES = ('placeholder', 'name', 'class', 'value', 'title')
+OBJ_PREFIXES = ('tbx', 'btn', 'checkbox', 'radio', 'dropdown', 'link')
+XPATH_PREFIXES = ("xpath://", "//")
+ALL_PREFIXES = BUILT_IN_PREFIXES + ATTR_PREFIXES + OBJ_PREFIXES
 
 def standardize_locator(locator: str):
     index = 1
-    if any(prefix for prefix in CUSTOM_PREFIX + BUILT_IN_PREFIX + STANDARD_PREFIX if locator.startswith(prefix)):
+    if any(prefix for prefix in ALL_PREFIXES if locator.startswith(prefix)):
         index = get_custom_element_index(locator)
         locator = re.sub(r':', '=', locator, count=1)
         locator = re.sub(r'\[\d+]', '', locator)
@@ -33,18 +33,8 @@ def get_custom_element_index(custom_locator):
 
 def print_xpath(selector: str):
     prefix, label = selector.split("=")
-    if prefix == "item":
-        print(f'//label[text()="{label}"]/following-sibling::*[1]')
-    elif prefix == "btn":
-        print(f'//*[self::button or self::a][contains(.,"{label}") and (contains(@class,"btn") '
-              f'or contains(@class,"button"))]')
-    elif prefix == "cbx":
-        print(f'//label[contains(.,"{label}")]/input[@type="checkbox"]|'
-              f'//label[contains(.,"{label}")]/preceding-sibling::*[@type="checkbox"]')
-    elif prefix == "radio":
-        print(f'//label[text()="{label}"]/preceding-sibling::input')
-    elif prefix == "text":
-        print(f'//body//*[not(self::script)][contains(text(),"{label}")]')
+    if prefix == "text":
+        print(f'//body//*[not(self::script)][text()="{label}"]')
     elif prefix == "link":
         print(f'//a[contains(.,"{label}")]')
     else:
@@ -71,40 +61,23 @@ CUSTOM_QUERY = """
       }
       """
 
-QUERY_BY_PLC = """
-      {
-           query(document, label) {
-              return document.evaluate(`//*[@placeholder="${label}"]`, document, null, 
+def get_the_query_by_attribute(prefix: str) -> str:
+    return f"""
+      {{
+           query(document, label) {{
+              return document.evaluate(`//*[@{prefix}="${{label}}"]`, document, null, 
               XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-          },
-           queryAll(document, label) {
+          }},
+           queryAll(document, label) {{
               let results = [];
-              let query = document.evaluate(`//*[@placeholder="${label}"]`, document, null, 
+              let query = document.evaluate(`//*[@{prefix}="${{label}}"]`, document, null, 
               XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-              for (let i = 0, length = query.snapshotLength; i < length; ++i) {
+              for (let i = 0, length = query.snapshotLength; i < length; ++i) {{
                   results.push(query.snapshotItem(i));
-              }
+              }}
               return results;
-                  }
-      }
-      """
-
-QUERY_BY_TEXT = """
-      {
-           query(document, label) {
-              return document.evaluate(`//body//*[not(self::script)][contains(text(),"${label}")]`, document, null, 
-              XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-          },
-           queryAll(document, label) {
-              let results = [];
-              let query = document.evaluate(`//body//*[not(self::script)][contains(text(),"${label}")]`, document, null, 
-              XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-              for (let i = 0, length = query.snapshotLength; i < length; ++i) {
-                  results.push(query.snapshotItem(i));
-              }
-              return results;
-                  }
-      }
+                  }}
+      }}
       """
 
 QUERY_BY_LINK = """
@@ -116,44 +89,6 @@ QUERY_BY_LINK = """
            queryAll(document, label) {
               let results = [];
               let query = document.evaluate(`//a[contains(.,"${label}")]`, document, null, 
-              XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-              for (let i = 0, length = query.snapshotLength; i < length; ++i) {
-                  results.push(query.snapshotItem(i));
-              }
-              return results;
-                  }
-      }
-      """
-
-
-QUERY_BY_NAME = """
-      {
-           query(document, label) {
-              return document.evaluate(`//*[@name="${label}"]`, document, null, 
-              XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-          },
-           queryAll(document, label) {
-              let results = [];
-              let query = document.evaluate(`//*[@name="${label}"]`, document, null, 
-              XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-              for (let i = 0, length = query.snapshotLength; i < length; ++i) {
-                  results.push(query.snapshotItem(i));
-              }
-              return results;
-                  }
-      }
-      """
-
-
-QUERY_BY_CLASS = """
-      {
-           query(document, label) {
-              return document.evaluate(`//*[@class="${label}"]`, document, null, 
-              XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-          },
-           queryAll(document, label) {
-              let results = [];
-              let query = document.evaluate(`//*[@class="${label}"]`, document, null, 
               XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
               for (let i = 0, length = query.snapshotLength; i < length; ++i) {
                   results.push(query.snapshotItem(i));

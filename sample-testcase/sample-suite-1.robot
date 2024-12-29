@@ -27,13 +27,13 @@ TC_1_1 - Check correctness of screen first loading
 TC_1_2 - Check correctness of screen first loading
     [Tags]     ui    automated
     Start Browser with url    https://dev.to/playwright     headless=False
-#    hover on    btn:Create account
-    element should be shown    btn:Create account
-    element should not be shown   btn:ABC
-    element attribute should be    btn:Follow    id     user-follow-butt
-    element attribute should not be    btn:Follow    id     user-follow-butt-wrong
-    click button    btn:Create account
-    ${tag}    get element tag    btn:Create account
+    element should be shown    link:Create account
+    element should not be shown   link:ABC
+    element attribute should be        id:user-follow-butt   id      user-follow-butt
+    element attribute should not be    id:user-follow-butt    id     user-follow-butt-wrong
+    element attribute should not be    id:user-follow-butt    xd     user-follow-butt-wrong
+    click button    class:site-logo__img
+    page should have    DEV Community is a community of
 
 TC_1_3 - Check correctness of screen first loading
     [Tags]     ui    automated

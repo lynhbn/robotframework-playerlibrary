@@ -34,19 +34,19 @@ class ElementHandler(BaseContext):
 
     @keyword("element should have")
     def element_should_have(self, locator, text):
-        expect(self.get_element(locator).locator(f"text={text}")).to_be_visible()
+        expect(self.get_element(locator).get_by_text(text)).to_be_visible()
 
     @keyword("element should have these texts")
     def element_should_have_these_texts(self, locator, *texts):
         element = self.get_element(locator)
         for text in texts:
-            assert (text in element.text_content()) or element.locator(f'xpath=/*[contains(.,"{text}")]').is_visible()
+            expect(element.get_by_text(text)).to_be_visible()
 
     @keyword("element should not have")
     def element_should_not_have(self, locator, *texts):
         element = self.get_element(locator)
         for text in texts:
-            expect(element.locator(f'xpath=.//*[contains(.,"{text}")]')).to_be_hidden()
+            expect(element.get_by_text(text)).to_be_hidden()
 
     @keyword("get inner element")
     def get_inner_element(self, locator, inner_locator):
@@ -119,17 +119,22 @@ class ElementHandler(BaseContext):
         element = self.get_element(locator)
         expect(element).not_to_have_attribute(attribute, value)
 
-    @keyword("element attribute value should be")
-    def element_attribute_value_should_be(self, locator, attribute, value):
+    @keyword("element attribute should be")
+    def element_attribute_should_be(self, locator, attribute, value):
         element = self.get_element(locator)
         expect(element).to_have_attribute(attribute, value)
 
-    @keyword('element attribute value should contain')
-    def element_attribute_value_should_contain(self, locator, attribute, expected_value):
+    @keyword("element attribute should not be")
+    def element_attribute_should_not_be(self, locator, attribute, value):
+        element = self.get_element(locator)
+        expect(element).not_to_have_attribute(attribute, value)
+
+    @keyword('element attribute should contain')
+    def element_attribute_should_contain(self, locator, attribute, expected_value):
         assert expected_value in self.get_attribute(locator, attribute)
 
-    @keyword('element attribute value should not contain')
-    def element_attribute_value_should_not_contain(self, locator, attribute, expected_value):
+    @keyword('element attribute should not contain')
+    def element_attribute_should_not_contain(self, locator, attribute, expected_value):
         assert expected_value not in [self.get_attribute(locator, attribute), None]
 
     @keyword("element should be shown")
@@ -139,7 +144,6 @@ class ElementHandler(BaseContext):
     @keyword("element should not be shown")
     def element_should_not_be_shown(self, locator):
         expect(self.get_element(locator)).to_be_hidden()
-
 
     @keyword("hover on")
     def hover_on(self, locator):
@@ -264,8 +268,7 @@ class ElementHandler(BaseContext):
         if expected_item:
             expect(self.get_element(expected_item)).to_be_visible(timeout=timeout)
         if expected_text:
-            expect(self.get_element(f'//body//*[not(self::script)]'
-                                    f'[contains(text(),"{expected_text}")]')).to_be_visible(timeout=timeout)
+            expect(self.page.get_by_text(expected_text)).to_be_visible(timeout=timeout)
 
     @keyword('double click')
     def double_click(self, locator):
