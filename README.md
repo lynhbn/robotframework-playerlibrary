@@ -1,5 +1,10 @@
 # robotframework-playerlibrary
-Simple GUI/API automation testing library written in Python using Playwright
+Light-weight GUI/API automation testing library written in Python only using Playwright. No need to install any NodeJS stuff.
+
+**Installation:**
+```
+pip install robotframework-playerlibrary
+```
 
 **Import the library:**
 ```
@@ -18,20 +23,36 @@ Login into the system using provided account
     Page Should Have    Welcome Back!
 
 ```
+
+**Example locators:**
+
+Locators can be a xpath: `//button[@id="login""]`
+
+Can be a prefix: `id:login` `class:yellow` `text:Log in`
+
+Full list of supported prefixes:
+- _BUILT_IN_: `id`, `text`, `data-test-id`, `data-testid`, `data-test`
+- _ATTRIBUTE_: `placeholder`, `name`, `class`, `value`, `title`
+- _HYPERLINK_: `link`
+- _XPATH_: `xpath://`, `//`
+
 **Example UI scenario:**
 ```
-Suite Setup          Start Browser Then Open Url    https://sample-system.com/     headless=True
+*** Settings ***
+Test Timeout       300
+Resource        ./sample.resource
 
-
-Test Setup       Login into the system using provided account    AND
-Test Teardown       Start new browser session
-Suite Teardown      Quit all browsers
+Suite Setup    Setup custom locator and timeout
+Test Teardown    Start new browser session
+Suite Teardown       Quit all browsers
 
 *** Test Cases ***
-TC_01 - Check correctness of some elements on the screen
-    Element Should Be Shown    ${calendar_picker}
-    Element Should Be Shown    ${apply_btn}
-    Element Should Be Shown    ${clear_btn}
+TC_1_1 - Check correctness of screen first loading
+    [Tags]     ui    automated
+    Start Browser with url    https://dev.to/playwright     headless=False
+    Button Should Be Enabled   id:user-follow-butt
+    ${c}    get element     text:Follow
+    number of element should be     text:Follow      1
 ```
 **Example API scenario:**
 ```
@@ -47,10 +68,6 @@ TC_001 - Sample Rest API test case
     Rest Dispose
 ```
 
-**Keyword documentation at** https://lynhbn.github.io/robotframework-playerlibrary/keyword_documentation.html
+**Keyword documentation at** https://lynhbn.github.io/robotframework-playerlibrary/index.html
 
-**Quick-hand prefix locator supported:**
-- `BUILT_IN_PREFIXES` = ('id', 'text', 'data-test-id', 'data-testid','data-test')
-- `ATTR_PREFIXES` = ('placeholder', 'name', 'class', 'value', 'title')
-- `OBJ_PREFIXES` = ('link',)
-- `XPATH_PREFIXES` = ("xpath://", "//")
+
