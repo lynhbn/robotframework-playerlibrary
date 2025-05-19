@@ -2,6 +2,8 @@
 Test Timeout       300
 Resource        ./sample.resource
 
+Suite Setup    Setup custom locator and timeout
+Test Teardown    Start new browser session
 Suite Teardown       Quit all browsers
 
 *** Test Cases ***
@@ -9,8 +11,8 @@ TC_1_1 - Check correctness of screen first loading
     [Tags]     ui    automated
     Start Browser with url    https://dev.to/playwright     headless=False
     Button Should Be Enabled   id:user-follow-butt
-    ${c}    get element     btn:Follow
-    number of element should be     btn:Follow      1
+    ${c}    get element     text:Follow
+    number of element should be     text:Follow      1
     font size should be     //h1      30px
     get css property value    //h1    margin
     element should have     //div[@class="profile-header__details"]
@@ -33,22 +35,22 @@ TC_1_2 - Check correctness of screen first loading
     element attribute should not be    id:user-follow-butt    id     user-follow-butt-wrong
     element attribute should not be    id:user-follow-butt    xd     user-follow-butt-wrong
     click button    class:site-logo__img
-    page should have    DEV Community is a community of
+    page should have   Playwright supports all modern rendering engines including Chromium
 
 TC_1_3 - Check correctness of screen first loading
     [Tags]     ui    automated
-    start blank browser     headless=False
+    start blank browser    browser=firefox     headless=False
     page should be blank
     go to url    https://dev.to/playwright
     ${url}    get current url
     go to url   https://app.your.rentals/sign-up/email
-    textbox should be empty     //input[@data-testid="inputEmail"]
-    input into    //input[@data-testid="inputEmail"]    sample@sample.com
-    clear text     //input[@data-testid="inputEmail"]
-    textbox should be empty     //input[@data-testid="inputEmail"]
-    input into     //input[@data-testid="inputEmail"]    sample_123@sample.com
-    Clear Text Using Backspace     //input[@data-testid="inputEmail"]
-    textbox should be empty     //input[@data-testid="inputEmail"]
+    textbox should be empty     //input[@data-test-id="inputEmail"]
+    input into    //input[@data-test-id="inputEmail"]    sample@sample.com
+    clear text     //input[@data-test-id="inputEmail"]
+    textbox should be empty     //input[@data-test-id="inputEmail"]
+    input into     //input[@data-test-id="inputEmail"]    sample_123@sample.com
+    Clear Text Using Backspace     //input[@data-test-id="inputEmail"]
+    textbox should be empty     //input[@data-test-id="inputEmail"]
     go to url   https://ultimateqa.com/complicated-page
     Placeholder should be     //input[@id="et_pb_contact_name_0"]    Name
     textbox should be correct    //input[@id="et_pb_contact_name_0"]    state=enabled   default=${EMPTY}
@@ -119,8 +121,8 @@ TC_1_6 - Check correctness of screen first loading
     [Tags]     ui    automated
     start blank browser     headless=False
     go to url   https://ultimateqa.com/simple-html-elements-for-automation/
-    element attribute value should contain    //button[@id="button1"]    type    submit
-    element attribute value should not contain    //button[@id="button1"]    xxx    submit
+    element attribute should contain    //button[@id="button1"]    type    submit
+    element attribute should not contain    //button[@id="button1"]    xxx    submit
     input into     //input[@id="et_pb_contact_name_0"]       dfgfghfg23534hgfhf
     get actual text       //input[@id="et_pb_contact_name_0"]
     get actual number     //input[@id="et_pb_contact_name_0"]
@@ -150,14 +152,13 @@ TC_1_7 - Check correctness of screen first loading
 
 TC_1_8 - Check correctness of screen first loading
     [Tags]     ui    automated
-    start blank browser     headless=False
+    start blank browser   browser=firefox    headless=False
     go to url    https://www.w3schools.com/html/html_iframe.asp
     select iframe    //iframe[@title="W3Schools HTML Tutorial"]
     iframe should contain     HTML is the standard markup language
     iframe should not contain   HTML TutorialXX
+    Click On Iframe     id:tnb-google-search-mobile-show
     input on iframe      //input[@id="tnb-google-search-input"]    abcdef
-    click on iframe       //a[@title="Sign Up to Improve Your Learning Experience"]
-    iframe should have element     //a[@title="Sign Up to Improve Your Learning Experience"]
     unselect iframe
     page should have      An HTML iframe is used to display a web page within a web page.
 

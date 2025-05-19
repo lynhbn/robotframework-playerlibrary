@@ -2,7 +2,7 @@ import re
 
 BUILT_IN_PREFIXES = ('id', 'text', 'data-test-id', 'data-testid','data-test')
 ATTR_PREFIXES = ('placeholder', 'name', 'class', 'value', 'title')
-OBJ_PREFIXES = ('tbx', 'btn', 'checkbox', 'radio', 'dropdown', 'link')
+OBJ_PREFIXES = ('link',)
 XPATH_PREFIXES = ("xpath://", "//")
 ALL_PREFIXES = BUILT_IN_PREFIXES + ATTR_PREFIXES + OBJ_PREFIXES
 

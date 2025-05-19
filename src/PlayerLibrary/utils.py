@@ -30,7 +30,18 @@ def random_number_chars(length):
 
 
 @keyword("should be equal as amounts")
-def should_be_equal_as_amounts(number_1, number_2, deviation=0.01):
+def should_be_equal_as_amounts(number_1, number_2, deviation: float = 0.01):
+    """
+    Compare 2 numbers with the acceptable deviation
+
+    E.g: With ``deviation``= 0.01, ``7.01`` will be equal to ``7.00``
+
+    *number_1*: the first number
+
+    *number_2*: the second number
+
+    *deviation*: the acceptable amount of deviation
+    """
     number_1 = str(number_1).replace(",", "")
     number_2 = str(number_2).replace(",", "")
     difference = round(float(number_1) - float(number_2), 4)
@@ -42,6 +53,9 @@ def should_be_equal_as_amounts(number_1, number_2, deviation=0.01):
 
 @keyword("should not be equal as amounts")
 def should_not_be_equal_as_amounts(number_1, number_2):
+    """
+    Negative keyword of `should be equal as amounts`
+    """
     difference = round(float(number_1) - float(number_2), 2)
     if abs(round(difference, 2)) <= 0.01:
         raise AssertionError("The number is likely equal")

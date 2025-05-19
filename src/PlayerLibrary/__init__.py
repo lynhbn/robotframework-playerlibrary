@@ -12,11 +12,12 @@ from .table_handler import TableHandler
 from .textbox_handler import TextboxHandler
 
 
-
 class PlayerLibrary(DynamicCore):
     ROBOT_LIBRARY_SCOPE = 'GLOBAL'
 
-    def __init__(self):
+    def __init__(self,
+                 assertion_timeout: int = 10000):
+        self.assertion_timeout = assertion_timeout
         libraries = [APIHandler(self), BrowserHandler(self), ButtonHandler(self), CheckboxHandler(self),
                      DatePickerHandler(self), DropdownHandler(self), ElementHandler(self), IframeHandler(self), PageHandler(self),
                      TableHandler(self), TextboxHandler(self)]
