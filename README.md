@@ -47,7 +47,7 @@ TC_001 - Sample Rest API test case
     Rest Dispose
 ```
 
-**Keyword documentation at** https://lynhbn.github.io/robotframework-playerlibrary/keyword_documentation.html
+**Keyword documentation at** https://lynhbn.github.io/robotframework-playerlibrary/index.html
 
 **Quick-hand prefix locator supported:**
 - `BUILT_IN_PREFIXES` = ('id', 'text', 'data-test-id', 'data-testid','data-test')
